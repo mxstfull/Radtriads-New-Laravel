@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Validator;
 use App\User;
+use Illuminate\Support\Str;
 
 
 class AuthController extends Controller {
@@ -56,10 +57,12 @@ class AuthController extends Controller {
         if($validator->fails()){
              return response()->json($validator->errors(), 400);
         }
-
         $user = User::create(array_merge(
                     $validator->validated(),
-                    ['password' => bcrypt($request->password)]
+                    [
+                        'password' => bcrypt($request->password),
+                        'unique_id' => Str::uuid()->toString()
+                    ]
                 ));
 
         return response()->json([
