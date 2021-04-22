@@ -1,52 +1,34 @@
 <?php
 
-
 namespace App\Http\Controllers;
-
-
 use Illuminate\Http\Request;
 
+class FileUploadController extends Controller {
 
-class FileUploadController extends Controller
-{
     /**
-     * Show the application dashboard.
+     * Create a new AuthController instance.
      *
-     * @return \Illuminate\Http\Response
+     * @return void
      */
     public function __construct() {
-        $this->middleware('fileupload:api', ['except' => ['upload', 'download']]);
+        $this->middleware('fileupload:api', ['except' => ['upload']]);
     }
+
     /**
-     * Show the application dashboard.
+     * Get a JWT via given credentials.
      *
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function upload(Request $request)
-    {
-
-        echo "DEDEDEDE";
-        $this->validate($request, [
-                'filenames' => 'required',
-                'filenames.*' => 'mimes:doc,pdf,docx,zip'
-        ]);
-
-
-        if($request->hasfile('filenames'))
-         {
-            foreach($request->file('filenames') as $file)
-            {
-                $name = time().'.'.$file->extension();
-                $file->move(public_path().'/upload/', $name);  
-                $data[] = $name;  
-            }
-         }
-
-         $file= new File();
-         $file->filenames=json_encode($data);
-         $file->save();
-
-
-        return back()->with('success', 'Data Your files has been successfully added');
+    public function upload(Request $request){
+        $file = $request->file('attachment');
+        $filePath = $file->storeAs('uploads', $file->getClientOriginalName(), 'public');
+        // if($file){
+        //     $fileName = time().'_'.$file->getClientOriginalName();
+        //     $filePath = $file->storeAs('uploads', $fileName, 'public');
+        //     echo $filePath;
+        //     return back()
+        //     ->with('success','File has been uploaded.')
+        //     ->with('file', $fileName);
+        // }
     }
 }

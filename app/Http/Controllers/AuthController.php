@@ -26,6 +26,7 @@ class AuthController extends Controller {
      * @return \Illuminate\Http\JsonResponse
      */
     public function login(Request $request){
+
     	$validator = Validator::make($request->all(), [
             'email' => 'required|email',
             'password' => 'required|string|min:6',
@@ -38,10 +39,8 @@ class AuthController extends Controller {
         if (! $token = auth()->attempt($validator->validated())) {
             return response()->json(['error' => 'Either email or password is wrong.'], 401);
         }
-
         return $this->createNewToken($token);
     }
-
     /**
      * Register a User.
      *

@@ -20,7 +20,7 @@ class CreateUsersTable extends Migration
             $table->string('password');
             $table->string('password_tmp')->nullable();
             $table->string('email')->unique();
-            $table->string('profile_picture');
+            $table->string('profile_picture')->nullable();
             $table->integer('is_paying')->default(0);
             $table->integer('first_pay')->default(0);
             $table->integer('has_seen_10_days_left_popup')->default(0);
@@ -34,9 +34,9 @@ class CreateUsersTable extends Migration
             $table->integer('show_social_share')->default(0);
             $table->integer('is_account_public')->default(0);
             $table->integer('email_verified')->default(0);
-            $table->string('email_activation_code');
-            $table->integer('rank');
-            $table->integer('status');
+            $table->string('email_activation_code')->nullable();
+            $table->integer('rank')->nullable();
+            $table->integer('status')->nullable();
             $table->integer('first_pay_admin')->default(0);
             $table->string('stripe_plan_admin')->nullable();
             $table->string('payment_tax')->nullable();
