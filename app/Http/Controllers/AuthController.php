@@ -8,6 +8,12 @@ use Validator;
 use App\User;
 use Illuminate\Support\Str;
 
+use JWTAuth;
+use Tymon\JWTAuth\Exceptions\JWTException;
+use DB, Hash, Mail;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Mail\Message;
+
 
 class AuthController extends Controller {
 
@@ -51,21 +57,36 @@ class AuthController extends Controller {
             'name' => 'required|string|between:2,100',
             'email' => 'required|string|email|max:100|unique:users',
             'password' => 'required|string|confirmed|min:6',
+            'acceptTerms' => 'accepted',
         ]);
 
         if($validator->fails()){
              return response()->json($validator->errors(), 400);
         }
+
+        $verification_code = Str::uuid()->toString();
         $user = User::create(array_merge(
                     $validator->validated(),
                     [
                         'password' => bcrypt($request->password),
-                        'unique_id' => Str::uuid()->toString()
+                        'unique_id' => Str::uuid()->toString(),
+                        'email_activation_code' => $verification_code
                     ]
                 ));
 
+        $name = $request->name;
+        $email = $request->email;        
+        $subject = "Please verify your email address.";
+        Mail::send('email.verify', ['name' => $name, 'verification_code' => $verification_code],
+            function($mail) use ($email, $name, $subject){
+                $mail->from(getenv('FROM_EMAIL_ADDRESS'), "From User/Company Name Goes Here");
+                $mail->to($email, $name);
+                $mail->subject($subject);
+            });
+
         return response()->json([
             'message' => 'User successfully registered',
+            'verification' => $verification_code,
             'user' => $user
         ], 201);
     }
