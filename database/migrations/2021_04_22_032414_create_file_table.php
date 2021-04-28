@@ -33,6 +33,7 @@ class CreateFileTable extends Migration
             $table->integer('is_picture')->default(0);
             $table->integer('is_deleted')->default(0);
             $table->integer('status')->default(0);
+            $table->integer('category');
             $table->timestamps();
         });
     }

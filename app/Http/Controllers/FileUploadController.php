@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Response;
+use App\Models\AlbumModel;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\File;
 
 class FileUploadController extends Controller {
 
@@ -13,11 +16,13 @@ class FileUploadController extends Controller {
      * @return void
      */
     public function __construct() {
-        $this->middleware('fileupload:api', ['except' => ['upload']]);
+        $this->middleware('fileupload:api', ['except' => ['upload', 'getSubFolders', 'createFolder']]);
     }
 
+    
+
     /**
-     * Get a JWT via given credentials.
+     * File Upload.
      *
      * @return \Illuminate\Http\JsonResponse
      */
@@ -62,6 +67,70 @@ class FileUploadController extends Controller {
         // }
         // return $response;
     }
+    
+    /**
+     * Folder Creation.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getSubFolders(Request $request){
 
+        $user_id = $request->input('user_id');
+        $currentFolder = $request->input('currentFolder');
+
+        $result = [];
+        $result_tmp = AlbumModel::select('id', 'title', 'is_protected', 'path')
+            ->where('path', 'like', $currentFolder['path']."%")
+            ->where('user_id', $user_id)
+            ->orderby('updated_at', 'asc')
+            ->get();
+        
+        foreach($result_tmp as $item) {
+            $trimmed = str_replace($currentFolder['path'], '', $item['path']) ;
+            if(!strcasecmp($trimmed, $item['title']."/"))
+            {
+                array_push($result, $item);
+            }    
+        }
+        // print $result[0];
+        return response()->json($result);
+    }
+
+    /**
+     * Folder Creation.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function createFolder(Request $request){
+        $user_id = $request->input('user_id');
+        $currentFolder = $request->input('currentFolder');
+        $newFolderTitle = $request->input('newFolderTitle');
+        $newFolderPath = $currentFolder['path'].$newFolderTitle;
+        $data = array('user_id' => $user_id, 'title' => $newFolderTitle, 'path' => $newFolderPath."/");
+        
+        if(File::isDirectory(storage_path('app/').$newFolderPath."/"))
+            return "insert error";
+        
+        if(!AlbumModel::create($data))
+            return "insert error";
+        
+        if(!Storage::disk('local')->makeDirectory($newFolderPath))
+        {
+            AlbumModel::select('id', 'title', 'is_protected', 'path')
+                ->where('path', 'like', $currentFolder['path']."%")
+                ->where('user_id', $user_id)
+                ->orderby('id', 'desc')
+                ->take(1)
+                ->delete();
+        }
+        return response()->json(
+            AlbumModel::select('id', 'title', 'is_protected', 'path')
+                ->where('path', 'like', $currentFolder['path']."%")
+                ->where('user_id', $user_id)
+                ->orderby('id', 'desc')
+                ->get()
+                ->first()
+        );
+    }
     
 }

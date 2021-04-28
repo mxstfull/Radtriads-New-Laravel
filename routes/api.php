@@ -19,4 +19,6 @@ Route::group([
     'prefix' => 'fileupload'
 ], function ($router) {
     Route::post('upload', 'FileUploadController@upload');
+    Route::post('getSubFolders', 'FileUploadController@getSubFolders');
+    Route::post('createFolder', 'FileUploadController@createFolder');
 });
