@@ -21,4 +21,14 @@ Route::group([
     Route::post('upload', 'FileUploadController@upload');
     Route::post('getSubFolders', 'FileUploadController@getSubFolders');
     Route::post('createFolder', 'FileUploadController@createFolder');
+    Route::post('getFolderTree', 'FileUploadController@getFolderTree');
 });
+
+Route::group([
+    'middleware' => 'api',
+    'prefix' => 'fileview'
+], function ($router) {
+    Route::post('getFileByCategory', 'FileViewController@getFileByCategory');
+    Route::post('downloadFiles', 'FileViewController@downloadFiles');
+});
+
