@@ -8,6 +8,12 @@ use Validator;
 use App\User;
 use Illuminate\Support\Str;
 
+use JWTAuth;
+use Tymon\JWTAuth\Exceptions\JWTException;
+use DB, Hash, Mail;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Mail\Message;
+
 
 class AuthController extends Controller {
 
@@ -17,7 +23,7 @@ class AuthController extends Controller {
      * @return void
      */
     public function __construct() {
-        $this->middleware('auth:api', ['except' => ['login', 'register']]);
+        $this->middleware('auth:api', ['except' => ['login', 'register', 'verifyUser']]);
     }
 
     /**
@@ -27,6 +33,7 @@ class AuthController extends Controller {
      */
     public function login(Request $request){
 
+        echo $request['email'];
     	$validator = Validator::make($request->all(), [
             'email' => 'required|email',
             'password' => 'required|string|min:6',
@@ -39,8 +46,10 @@ class AuthController extends Controller {
         if (! $token = auth()->attempt($validator->validated())) {
             return response()->json(['error' => 'Either email or password is wrong.'], 401);
         }
+
         return $this->createNewToken($token);
     }
+
     /**
      * Register a User.
      *
@@ -51,26 +60,74 @@ class AuthController extends Controller {
             'name' => 'required|string|between:2,100',
             'email' => 'required|string|email|max:100|unique:users',
             'password' => 'required|string|confirmed|min:6',
+            'acceptTerms' => 'accepted',
         ]);
 
         if($validator->fails()){
              return response()->json($validator->errors(), 400);
         }
+
+        $verification_code = Str::uuid()->toString();
         $user = User::create(array_merge(
                     $validator->validated(),
                     [
                         'password' => bcrypt($request->password),
-                        'unique_id' => Str::uuid()->toString()
+                        'unique_id' => Str::uuid()->toString(),
+                        'email_activation_code' => $verification_code
                     ]
                 ));
 
+        // $name = $request->name;
+        // $email = $request->email;        
+        // $subject = "Please verify your email address.";
+        // Mail::send('email.verify', ['name' => $name, 'verification_code' => $verification_code],
+        //     function($mail) use ($email, $name, $subject){
+        //         $mail->from(getenv('FROM_EMAIL_ADDRESS'), "From User/Company Name Goes Here");
+        //         $mail->to($email, $name);
+        //         $mail->subject($subject);
+        //     });
+
         return response()->json([
             'message' => 'User successfully registered',
+            'verification' => $verification_code,
             'user' => $user
         ], 201);
     }
+    /**
+     * API Verify User
+     *
+     * 
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function verifyUser(Request $request)
+    {
 
+        $check = DB::table('users')->where('email_activation_code',$request['vcode'])->first();
 
+        if(!is_null($check)){
+            $user = User::find($check->id);
+
+            if($user->email_verified == 1){
+                return response()->json([
+                    'success'=> true,
+                    'message'=> 'Account already verified..'
+                ]);
+            }
+ 
+            $user->update(['email_verified' => 1]);
+
+//            DB::table('users')->where('email_activation_code',$verification_code)->delete();
+
+            return response()->json([
+                'success'=> true,
+                'message'=> 'You have successfully verified your email address.'
+            ]);
+        }
+        
+        return response()->json(['error' => 'Reset your verification code. Not correct!'], 401);
+
+    }
+ 
     /**
      * Log the user out (Invalidate the token).
      *
