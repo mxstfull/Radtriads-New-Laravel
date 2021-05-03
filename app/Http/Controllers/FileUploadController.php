@@ -87,22 +87,34 @@ class FileUploadController extends Controller {
     {
         $fileName = $this->createFilename($file);
         $currentPath = $this->unique_id;
-        if(!empty($this->currentPathForUpload))
+        if(!empty($this->currentPathForUpload) && $this->currentPathForUpload != 'home')
             $currentPath = $currentPath.'/'.$this->currentPathForUpload;
 
         // Build the file path
         $filePath = "uploads/{$currentPath}/";
         $finalPath = storage_path("app/".$filePath);
-    
+        while(file_exists($finalPath.$fileName))
+        {
+            $temp = explode('.', $fileName);
+            $title = '';
+            for($index = 0; $index < sizeof($temp); $index ++)
+            {
+                if($index < sizeof($temp) - 1)
+                    $title = $title.$temp[$index];
+                else $title = $title.'_copy.'.$temp[$index];
+            }
+            $fileName = $title;
+        }
         // move the file name
         $file->move($finalPath, $fileName);
 
         $file = Storage::get($filePath.$fileName);
-    
+        if(!file_exists($finalPath.$fileName))
+            return "failed";
         //Simba: insert Database.
         $short_id = gen_uid(8);
         $title = $fileName;
-        $unique_id = $this->unique_id;
+        $unique_id = Str::uuid()->toString();
         $url = $filePath.$fileName;
         $folder_path = $filePath;
         $filename = $title;
