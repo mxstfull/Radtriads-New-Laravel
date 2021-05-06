@@ -33,7 +33,7 @@ class FileViewController extends Controller
         $folderPath = 'uploads/'.$unique_id.'/'.$currentPath; 
         // $folderPath = str_replace(' ', '%20', $folderPath);
         
-        $result = FileModel::select('unique_id', 'title', 'url', 'filename', 'diskspace', 'category', 'is_protected', 'created_at', 'updated_at')
+        $result = FileModel::select('unique_id', 'title', 'url', 'thumb_url', 'filename', 'diskspace', 'category', 'is_protected', 'is_picture', 'ext', 'created_at', 'updated_at')
                 ->where('folder_path', 'like', $folderPath)
                 ->where('user_id', $user_id)
                 ->where('is_deleted', 0)
@@ -99,7 +99,7 @@ class FileViewController extends Controller
                         ->update([
                             'url' => 'uploads/'.$user_unique_id.'/'.($destPath != "" ? $destPath.'/': '').$file_title, 
                             'folder_path' =>'uploads/'.$user_unique_id.'/'.($destPath != "" ? $destPath.'/': ''),
-                            'title' => $file_title, 
+                            // 'title' => $file_title, 
                             'filename' => $file_title
                         ]);
                 }
@@ -119,7 +119,7 @@ class FileViewController extends Controller
                         ->update([
                             'url' => 'uploads/'.$user_unique_id.'/'.($destPath != "" ? $destPath.'/': '').$file_title, 
                             'folder_path' =>'uploads/'.$user_unique_id.'/'.($destPath != "" ? $destPath.'/': ''),
-                            'title' => $file_title,
+                            // 'title' => $file_title,
                             'filename' => $file_title
                         ]);
                 }
@@ -140,10 +140,29 @@ class FileViewController extends Controller
         return true;
     }
     public function renameFile(Request $request) {
-        
+        $fileItem = $request->input('item');
+        $newFileName = $request->input('newFileName');
+        $unique_id = $fileItem['unique_id'];
+        $extension = FileModel::where('unique_id', $unique_id)
+            ->first()->ext;
+        FileModel::where('unique_id', $unique_id)
+            ->update([
+                'title' => $newFileName.'.'.$extension,
+            ]);
+        return response()->json(['newFileName' => $newFileName.'.'.$extension],200);
+
     }
     public function deleteFile(Request $request) {
-
+        $fileItems = $request->input('item');
+        foreach($fileItems as $fileItem)
+        {
+            $file_unique_id = $fileItem['unique_id'];
+            FileModel::where('unique_id', $file_unique_id)
+            ->update([
+                'is_deleted' => 1
+            ]);
+        }
+        return true;
     }
     
 }

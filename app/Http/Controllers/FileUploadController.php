@@ -18,14 +18,21 @@ use Pion\Laravel\ChunkUpload\Receiver\FileReceiver;
 use Pion\Laravel\ChunkUpload\Exceptions\UploadFailedException;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
+use Imagick;
+Use Image;
+use VideoThumbnail;
 
+define("GOOGLE_API_KEY", "AIzaSyDkGP4XbpCDaAB-qFIqnJqNIqStWWA1IOU");
+use GoogleCloudVision\GoogleCloudVision;
+use GoogleCloudVision\Request\AnnotateImageRequest;
+use Google\Cloud\Core\ServiceBuilder;
 
 class FileUploadController extends Controller {
 
     public $initial_path;
     private $user_id;
     private $unique_id;
-    private $is_picture = 1;
+    private $is_picture = 0;
     private $ip_address;
     private $category;
     private $currentPathForUpload;
@@ -55,7 +62,18 @@ class FileUploadController extends Controller {
         $this->unique_id = $request->input('unique_id');
         $this->currentPathForUpload = $request->input('currentPath');
         $this->ip_address = $request->ip();
-        $this->category = 0;
+        if($request->input('currentCategory') == 'photo') {
+            $this->category = 0;
+        }
+        else if($request->input('currentCategory') == 'music') {
+            $this->category = 1;
+        }
+        else if($request->input('currentCategory') == 'video') {
+            $this->category = 2;
+        }
+        else if($request->input('currentCategory') == 'code') {
+            $this->category = 3;
+        }
         //create the file receiver
         $receiver = new FileReceiver("file", $request, HandlerFactory::classFromRequest($request));
 
@@ -105,17 +123,35 @@ class FileUploadController extends Controller {
             }
             $fileName = $title;
         }
-        // move the file name
+        
+        //Create thumbnails for photos.
+        //can't create thumnail for tiff images, and other files(music, video, code).
+        if($this->category == "photo" && $file->getClientOriginalExtension() != "tif" && $file->getClientOriginalExtension() != "tiff") 
+        {
+            $thumb = Image::make($file->getRealPath())->resize(600, 600, function ($constraint) {
+                $constraint->aspectRatio(); //maintain image ratio
+            });
+            $thumb->save($finalPath.'thumb_'.$fileName);
+            $this->is_picture = 1;
+        }
+        else {
+            $this->is_picture = 0;
+        }
+
         $file->move($finalPath, $fileName);
 
-        $file = Storage::get($filePath.$fileName);
         if(!file_exists($finalPath.$fileName))
+        {
             return "failed";
+        }
+        $file = Storage::get($filePath.$fileName);
         //Simba: insert Database.
         $short_id = gen_uid(8);
         $title = $fileName;
         $unique_id = Str::uuid()->toString();
         $url = $filePath.$fileName;
+        $thumb_url = $filePath.'thumb_'.$fileName;
+        if($this->is_picture == 0) $thumb_url = null;
         $folder_path = $filePath;
         $filename = $title;
         $ext = pathinfo(storage_path($filePath.$fileName), PATHINFO_EXTENSION);
@@ -130,6 +166,7 @@ class FileUploadController extends Controller {
             'title' => $title,
             'unique_id' => $unique_id,
             'url' => $url,
+            'thumb_url' => $thumb_url,
             'folder_path' => $folder_path,
             'filename' => $filename,
             'ext' => $ext,
