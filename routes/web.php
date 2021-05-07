@@ -35,8 +35,6 @@ Route::get('files/{filename}', function ($filename){
 //    $response->header('Content-Disposition', 'attachment');
     return $response;
 });
-
-
 function my_laravelDecode($param)
 {
     $param = str_replace('>', '/', $param);

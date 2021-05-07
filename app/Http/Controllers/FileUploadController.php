@@ -126,7 +126,8 @@ class FileUploadController extends Controller {
         
         //Create thumbnails for photos.
         //can't create thumnail for tiff images, and other files(music, video, code).
-        if($this->category == "photo" && $file->getClientOriginalExtension() != "tif" && $file->getClientOriginalExtension() != "tiff") 
+       
+        if($this->category == 0 && $file->getClientOriginalExtension() != "tif" && $file->getClientOriginalExtension() != "tiff") 
         {
             $thumb = Image::make($file->getRealPath())->resize(600, 600, function ($constraint) {
                 $constraint->aspectRatio(); //maintain image ratio
@@ -135,6 +136,9 @@ class FileUploadController extends Controller {
             $this->is_picture = 1;
         }
         else {
+            if($this->category == 2) {
+                VideoThumbnail::createThumbnail(storage_path('app/1.mp4'), storage_path('app/'), '1.png', 2, 800, 680);
+            }
             $this->is_picture = 0;
         }
 
@@ -259,6 +263,7 @@ class FileUploadController extends Controller {
     public function getFolderTree(Request $request) {
         $user_id = $request->input('user_id');
         $unique_id = $request->input('unique_id');
+        $this->unique_id = $unique_id;
         $this->initial_path = storage_path('app/uploads/').$unique_id;
         if(!is_dir($this->initial_path))
             File::makeDirectory($this->initial_path);
@@ -270,12 +275,16 @@ class FileUploadController extends Controller {
         return json_encode($result);
     }
     private function getAllSubFolders($currentPath, $folder_title, $category) {
-        if($currentPath === 'Home')
+        if($folder_title == 'Home')
             $path = str_replace($this->initial_path, '', $currentPath);
         else $path = str_replace($this->initial_path.'/', '', $currentPath);
-        
+        $displayName_query = AlbumModel::select('title')->where('path', "uploads/".$this->unique_id."/".$path."/")->first();
+        $displayName = "";
+        if($displayName_query != null) {
+            $displayName = $displayName_query->title;
+        }
         $folderItem =  [
-            'displayName' => $folder_title,
+            'displayName' => $displayName,
             'iconName' => 'person',
             'path' => $path,
             'category' => $category

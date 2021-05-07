@@ -32,14 +32,32 @@ class FileViewController extends Controller
         
         $folderPath = 'uploads/'.$unique_id.'/'.$currentPath; 
         // $folderPath = str_replace(' ', '%20', $folderPath);
+        if($category == -2) {
+            $result = FileModel::select('unique_id', 'title', 'url', 'thumb_url', 'filename', 'diskspace', 'category', 'is_protected', 'is_picture', 'ext', 'created_at', 'updated_at')
+            ->where('folder_path', 'like', $folderPath)
+            ->where('user_id', $user_id)
+            ->where('is_deleted', 1)
+            ->orderby('created_at', 'desc')
+            ->get();
+        }
+        else if($category == -1) {
+            $result = FileModel::select('unique_id', 'title', 'url', 'thumb_url', 'filename', 'diskspace', 'category', 'is_protected', 'is_picture', 'ext', 'created_at', 'updated_at')
+            ->where('folder_path', 'like', $folderPath)
+            ->where('user_id', $user_id)
+            ->where('is_deleted', 0)
+            ->orderby('created_at', 'desc')
+            ->get();
+        }
+        else {
+            $result = FileModel::select('unique_id', 'title', 'url', 'thumb_url', 'filename', 'diskspace', 'category', 'is_protected', 'is_picture', 'ext', 'created_at', 'updated_at')
+            ->where('folder_path', 'like', $folderPath)
+            ->where('user_id', $user_id)
+            ->where('is_deleted', 0)
+            ->where('category', $category)
+            ->orderby('created_at', 'desc')
+            ->get();
+        }
         
-        $result = FileModel::select('unique_id', 'title', 'url', 'thumb_url', 'filename', 'diskspace', 'category', 'is_protected', 'is_picture', 'ext', 'created_at', 'updated_at')
-                ->where('folder_path', 'like', $folderPath)
-                ->where('user_id', $user_id)
-                ->where('is_deleted', 0)
-                ->where('category', $category)
-                ->orderby('created_at', 'desc')
-                ->get();
         return response()->json($result);
     }
     public function downloadFiles(Request $request) {
@@ -164,5 +182,21 @@ class FileViewController extends Controller
         }
         return true;
     }
-    
+    public function renameAlbum(Request $request) {
+        $currentPath = $request->input('current_path');
+        $unique_id = $request->input('unique_id');
+        $newAlbumName = $request->input('newAlbumName');
+        $user_id = $request->input('user_id');
+        if($currentPath == "home") {
+            return true;
+        }
+        else {
+            $currentPath = "uploads/".$unique_id."/".$currentPath."/";
+        }
+        return AlbumModel::where('path', $currentPath)
+        ->where('user_id', $user_id)
+        ->update([
+            'title' => $newAlbumName
+        ]);
+    }
 }
