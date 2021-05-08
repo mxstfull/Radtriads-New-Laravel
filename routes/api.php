@@ -35,5 +35,6 @@ Route::group([
     Route::post('editFilePrivacy', 'FileViewController@editFilePrivacy');
     Route::post('renameFile', 'FileViewController@renameFile');
     Route::post('deleteFile', 'FileViewController@deleteFile');
+    Route::post('renameAlbum', 'FileViewController@renameAlbum');
 });
 
