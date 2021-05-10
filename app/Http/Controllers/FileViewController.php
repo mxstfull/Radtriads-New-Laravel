@@ -34,19 +34,26 @@ class FileViewController extends Controller
         // $folderPath = str_replace(' ', '%20', $folderPath);
         if($category == -2) { //This is for deleted medias.
             $result = FileModel::select('unique_id', 'title', 'url', 'thumb_url', 'filename', 'diskspace', 'category', 'is_protected', 'is_picture', 'ext', 'created_at', 'updated_at')
-            ->where('folder_path', 'like', $folderPath)
             ->where('user_id', $user_id)
             ->where('is_deleted', 1)
             ->orderby('created_at', 'desc')
             ->get();
         }
         else if($category == -1) { //This is for all medias.
-            $result = FileModel::select('unique_id', 'title', 'url', 'thumb_url', 'filename', 'diskspace', 'category', 'is_protected', 'is_picture', 'ext', 'created_at', 'updated_at')
-            ->where('folder_path', 'like', $folderPath)
-            ->where('user_id', $user_id)
-            ->where('is_deleted', 0)
-            ->orderby('created_at', 'desc')
-            ->get();
+            $result = [
+            'total' =>FileModel::select('unique_id', 'title', 'url', 'thumb_url', 'filename', 'diskspace', 'category', 'is_protected', 'is_picture', 'ext', 'created_at', 'updated_at')
+                ->where('user_id', $user_id)
+                ->where('is_deleted', 0)
+                ->orderby('created_at', 'desc')
+                ->get(),
+
+            'recent'=> FileModel::select('unique_id', 'title', 'url', 'thumb_url', 'filename', 'diskspace', 'category', 'is_protected', 'is_picture', 'ext', 'created_at', 'updated_at')
+                ->where('user_id', $user_id)
+                ->where('is_deleted', 0)
+                ->orderby('created_at', 'desc')
+                ->take(5)
+                ->get()
+            ];
         }
         else { //This is for special category.
             $result = FileModel::select('unique_id', 'title', 'url', 'thumb_url', 'filename', 'diskspace', 'category', 'is_protected', 'is_picture', 'ext', 'created_at', 'updated_at')
@@ -64,6 +71,7 @@ class FileViewController extends Controller
         
         $fileList = $request->input('fileList');
         $public_dir=public_path();
+        
         if(count($fileList) == 1) {
             $filepath = storage_path('App/').$fileList[0]["url"];
             return Response::download($filepath);
