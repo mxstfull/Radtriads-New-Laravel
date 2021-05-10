@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\Auth;
 use Imagick;
 Use Image;
 use VideoThumbnail;
+use ffmpeg_movie;
 
 define("GOOGLE_API_KEY", "AIzaSyDkGP4XbpCDaAB-qFIqnJqNIqStWWA1IOU");
 use GoogleCloudVision\GoogleCloudVision;
@@ -126,7 +127,12 @@ class FileUploadController extends Controller {
         
         //Create thumbnails for photos.
         //can't create thumnail for tiff images, and other files(music, video, code).
-       
+
+        
+        if(extension_loaded('Imagick')) {
+            echo 'Imagick Loaded';
+        }
+        else echo "ERRORs";
         if($this->category == 0 && $file->getClientOriginalExtension() != "tif" && $file->getClientOriginalExtension() != "tiff") 
         {
             $thumb = Image::make($file->getRealPath())->resize(600, 600, function ($constraint) {
@@ -134,10 +140,39 @@ class FileUploadController extends Controller {
             });
             $thumb->save($finalPath.'thumb_'.$fileName);
             $this->is_picture = 1;
+
         }
         else {
             if($this->category == 2) {
-                VideoThumbnail::createThumbnail(storage_path('app/1.mp4'), storage_path('app/'), '1.png', 2, 800, 680);
+                $vt = VideoThumbnail::createThumbnail(storage_path('app/1.mp4'), storage_path('app'), '1.png', 0, 800, 680);
+                // $ffmpeg = 'C:\Program Files (x86)\ffmpeg\bin\ffmpeg';
+                // $video = storage_path('app/1.mp4');
+                // $size = '320x240';
+                // $image = 'thumb-1.png';
+                // $cmd = "ffmpeg -i $video -deinterlace -an -ss 0 -f mjpeg -t 1 -r 1 -y -s $size $image 2>&1";
+                // var_dump($cmd) ;
+                // return shell_exec ($cmd);
+                // $frame = 10;
+                // // choose file name 
+                // $movie = storage_path('app/1.mp4');
+                // // choose thumbnail name 
+                // $thumbnail = 'thumb-1.png';
+                
+                // // make an instance of the class 
+                // $mov = new ffmpeg_movie($movie);
+                
+                // // get the frame defined above 
+                // $frame = $mov->getFrame($frame);
+                
+                // if ($frame) {
+                //     $gd_image = $frame->toGDImage();
+                
+                //     if ($gd_image) {
+                //         imagepng($gd_image, $thumbnail);
+                //         imagedestroy($gd_image);
+                //         echo '<img src="'.$thumbnail.'">';
+                //     }
+                // }                
             }
             $this->is_picture = 0;
         }
@@ -265,12 +300,21 @@ class FileUploadController extends Controller {
         $unique_id = $request->input('unique_id');
         $this->unique_id = $unique_id;
         $this->initial_path = storage_path('app/uploads/').$unique_id;
+        if(!is_dir(storage_path('app/uploads')))
+            File::makeDirectory(storage_path('app/uploads'));
         if(!is_dir($this->initial_path))
             File::makeDirectory($this->initial_path);
-        $result = array(4);
+        $result = array(5);
         $categoryArray = ['photos', 'music', 'video', 'code'];
-        for ($x = 0; $x < 4; $x++) {
-            $result[$x] = $this->getAllSubFolders($this->initial_path, 'Home', $categoryArray[$x]);
+        $result[0] = [
+            'displayName' => "All Files",
+            'iconName' => "person",
+            'path' => "",
+            'category' => "all",
+            'children' => []
+        ];
+        for ($x = 1; $x <= 4; $x++) {
+            $result[$x] = $this->getAllSubFolders($this->initial_path, 'Home', $categoryArray[$x-1]);
         }
         return json_encode($result);
     }
