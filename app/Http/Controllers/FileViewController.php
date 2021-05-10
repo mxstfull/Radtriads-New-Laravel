@@ -32,7 +32,7 @@ class FileViewController extends Controller
         
         $folderPath = 'uploads/'.$unique_id.'/'.$currentPath; 
         // $folderPath = str_replace(' ', '%20', $folderPath);
-        if($category == -2) {
+        if($category == -2) { //This is for deleted medias.
             $result = FileModel::select('unique_id', 'title', 'url', 'thumb_url', 'filename', 'diskspace', 'category', 'is_protected', 'is_picture', 'ext', 'created_at', 'updated_at')
             ->where('folder_path', 'like', $folderPath)
             ->where('user_id', $user_id)
@@ -40,7 +40,7 @@ class FileViewController extends Controller
             ->orderby('created_at', 'desc')
             ->get();
         }
-        else if($category == -1) {
+        else if($category == -1) { //This is for all medias.
             $result = FileModel::select('unique_id', 'title', 'url', 'thumb_url', 'filename', 'diskspace', 'category', 'is_protected', 'is_picture', 'ext', 'created_at', 'updated_at')
             ->where('folder_path', 'like', $folderPath)
             ->where('user_id', $user_id)
@@ -48,7 +48,7 @@ class FileViewController extends Controller
             ->orderby('created_at', 'desc')
             ->get();
         }
-        else {
+        else { //This is for special category.
             $result = FileModel::select('unique_id', 'title', 'url', 'thumb_url', 'filename', 'diskspace', 'category', 'is_protected', 'is_picture', 'ext', 'created_at', 'updated_at')
             ->where('folder_path', 'like', $folderPath)
             ->where('user_id', $user_id)
@@ -64,26 +64,32 @@ class FileViewController extends Controller
         
         $fileList = $request->input('fileList');
         $public_dir=public_path();
-        // Zip File Name
-        $zipFileName = date("Y_m_d_his").'.zip';
-        // Create ZipArchive Obj
-        $zip = new ZipArchive;
-        if ($zip->open($public_dir . '/' . $zipFileName, ZipArchive::CREATE) === TRUE) {
-            // Add File in ZipArchive
-            foreach($fileList as $file) {
-                $zip->addFile(storage_path('App/').$file["url"], $file["title"]);
-            } 
-            $zip->close();
+        if(count($fileList) == 1) {
+            $filepath = storage_path('App/').$fileList[0]["url"];
+            return Response::download($filepath);
         }
-        // Set Header
-        $headers = array(
-            'Content-Type' => 'application/zip',
-        );
-        $filetopath=$public_dir.'/'.$zipFileName;
-        // Create Download Response
-        if(file_exists($filetopath)){
-            // return response()->download($filetopath,$zipFileName,$headers);
-            return Response::download($filetopath, $zipFileName, $headers)->deleteFileAfterSend(true);
+        else {
+            // Zip File Name
+            $zipFileName = date("Y_m_d_his").'.zip';
+            // Create ZipArchive Obj
+            $zip = new ZipArchive;
+            if ($zip->open($public_dir . '/' . $zipFileName, ZipArchive::CREATE) === TRUE) {
+                // Add File in ZipArchive
+                foreach($fileList as $file) {
+                    $zip->addFile(storage_path('App/').$file["url"], $file["title"]);
+                } 
+                $zip->close();
+            }
+            // Set Header
+            $headers = array(
+                'Content-Type' => 'application/zip',
+            );
+            $filetopath=$public_dir.'/'.$zipFileName;
+            // Create Download Response
+            if(file_exists($filetopath)){
+                // return response()->download($filetopath,$zipFileName,$headers);
+                return Response::download($filetopath, $zipFileName, $headers)->deleteFileAfterSend(true);
+            }
         }
     }
 
@@ -198,5 +204,42 @@ class FileViewController extends Controller
         ->update([
             'title' => $newAlbumName
         ]);
+    }
+    public function recoverFiles(Request $request) {
+        $fileItems = $request->input('item');
+        foreach($fileItems as $fileItem)
+        {
+            $file_unique_id = $fileItem['unique_id'];
+            FileModel::where('unique_id', $file_unique_id)
+            ->update([
+                'is_deleted' => 0
+            ]);
+        }
+        return true;
+    }
+    public function permanentlyDeleteFiles(Request $request) {
+        $fileItems = $request->input('item');
+        foreach($fileItems as $fileItem)
+        {
+            $file_unique_id = $fileItem['unique_id'];
+            if(File::delete(storage_path('app/').$fileItem['url'])) {
+                FileModel::where('unique_id', $file_unique_id)
+                ->delete();
+                File::delete(storage_path('app/').$fileItem['thumb_url']);
+            }
+            
+        }
+    }
+    public function getItemByUniqueId(Request $request) {
+        $unique_id = $request->input('unique_id');
+        if($unique_id == null) return false;
+        else {
+            $result = FileModel::select('unique_id', 'title', 'url', 'thumb_url', 'filename', 'diskspace', 'category', 'is_protected', 'is_picture', 'ext', 'created_at', 'updated_at')
+                    ->where('unique_id', $unique_id)
+                    ->where('category', 0)
+                    ->where('is_deleted', 0)
+                    ->first();
+            return response()->json($result);
+        }
     }
 }
