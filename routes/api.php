@@ -27,6 +27,18 @@ Route::group([
 
 Route::group([
     'middleware' => 'api',
+    'prefix' => 'account'
+], function ($router) {
+    Route::post('GetUserData', 'AccountController@GetUserData');
+    Route::post('MyInfo', 'AccountController@MyInfo');
+    Route::post('Settings', 'AccountController@Settings');
+    Route::post('Privacy', 'AccountController@Privacy');
+    Route::post('delete' , 'AccountController@delete');
+});
+
+
+Route::group([
+    'middleware' => 'api',
     'prefix' => 'fileview'
 ], function ($router) {
     Route::post('getFileByCategory', 'FileViewController@getFileByCategory');
