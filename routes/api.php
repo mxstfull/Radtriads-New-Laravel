@@ -43,5 +43,13 @@ Route::group([
 ], function ($router) {
     Route::post('getFileByCategory', 'FileViewController@getFileByCategory');
     Route::post('downloadFiles', 'FileViewController@downloadFiles');
+    Route::post('moveFiles', 'FileViewController@moveFiles');
+    Route::post('editFilePrivacy', 'FileViewController@editFilePrivacy');
+    Route::post('renameFile', 'FileViewController@renameFile');
+    Route::post('deleteFile', 'FileViewController@deleteFile');
+    Route::post('renameAlbum', 'FileViewController@renameAlbum');
+    Route::post('recoverFiles', 'FileViewController@recoverFiles');
+    Route::post('permanentlyDeleteFiles', 'FileViewController@permanentlyDeleteFiles');
+    Route::post('getItemByUniqueId', 'FileViewController@getItemByUniqueId');
 });
 
