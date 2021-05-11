@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\File;
 use App\Models\FileModel;
 use ZipArchive;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class FileViewController extends Controller
 {
@@ -33,6 +35,17 @@ class FileViewController extends Controller
         $folderPath = 'uploads/'.$unique_id.'/'.$currentPath; 
         // $folderPath = str_replace(' ', '%20', $folderPath);
         if($category == -2) { //This is for deleted medias.
+            //This is for erasing timeout medias.
+
+            $junk_files = FileModel::where('updated_at', '<', Carbon::now()->subDays(14))
+                ->where('is_deleted', 1)->get();
+            foreach ($junk_files as $file) {
+                if(File::delete(storage_path('app/').$file['url'])) {
+                    $file->delete();
+                    File::delete(storage_path('app/').$file['thumb_url']);
+                }
+            }
+
             $result = FileModel::select('unique_id', 'title', 'url', 'thumb_url', 'filename', 'diskspace', 'category', 'is_protected', 'is_picture', 'ext', 'created_at', 'updated_at')
             ->where('user_id', $user_id)
             ->where('is_deleted', 1)
@@ -40,6 +53,13 @@ class FileViewController extends Controller
             ->get();
         }
         else if($category == -1) { //This is for all medias.
+            $diskUsage_category = FileModel::select("category", DB::raw("sum(diskspace) as diskspace"))
+                ->where('is_deleted', 0)
+                ->groupBy('category')
+                ->get();
+            $diskUsage_deleted = FileModel::select(DB::raw("sum(diskspace) as diskspace"))
+                ->where('is_deleted', 1)
+                ->get();
             $result = [
             'total' =>FileModel::select('unique_id', 'title', 'url', 'thumb_url', 'filename', 'diskspace', 'category', 'is_protected', 'is_picture', 'ext', 'created_at', 'updated_at')
                 ->where('user_id', $user_id)
@@ -51,8 +71,10 @@ class FileViewController extends Controller
                 ->where('user_id', $user_id)
                 ->where('is_deleted', 0)
                 ->orderby('created_at', 'desc')
-                ->take(5)
-                ->get()
+                ->take(200)
+                ->get(),
+            'diskUsage_category' => $diskUsage_category,
+            'diskUsage_deleted' => $diskUsage_deleted
             ];
         }
         else { //This is for special category.
