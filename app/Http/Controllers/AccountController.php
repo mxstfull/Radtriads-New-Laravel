@@ -13,7 +13,7 @@ use Tymon\JWTAuth\Exceptions\JWTException;
 use DB, Hash, Mail;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Mail\Message;
-
+use App\Models\FileModel;
 
 class AccountController extends Controller {
 
@@ -23,7 +23,7 @@ class AccountController extends Controller {
      * @return void
      */
     public function __construct() {
-        $this->middleware('auth:api', ['except' => ['MyInfo', 'GetUserData' , 'Settings' , 'Privacy' , 'delete']]);
+        $this->middleware('auth:api', ['except' => ['MyInfo', 'GetUserData' , 'Settings' , 'Privacy' , 'delete', 'getDiskUsage']]);
     }
 
         /**
@@ -108,6 +108,33 @@ class AccountController extends Controller {
         return response()->json([
             'success'=> true,
             'message'=> $result
+        ]);
+    }
+    public function getDiskUsage(Request $request) {
+        $user_id = $request->input("user_id");
+        $max_space =DB::table('users')
+            ->where('users.id', $user_id)
+            ->join('plan', 'plan.id', '=', 'users.plan_id')
+            ->select('plan.diskspace')
+            ->get()->first();
+        $diskUsage_all = FileModel::select(DB::raw("sum(diskspace) as diskspace"))
+            ->where('user_id', $user_id)
+            ->where('is_deleted', 0)
+            ->get()->first();
+        $diskUsage_category = FileModel::select("category", DB::raw("sum(diskspace) as diskspace"))
+            ->where('user_id', $user_id)
+            ->where('is_deleted', 0)
+            ->groupBy('category')
+            ->get();
+        $diskUsage_deleted = FileModel::select(DB::raw("sum(diskspace) as diskspace"))
+            ->where('user_id', $user_id)
+            ->where('is_deleted', 1)
+            ->get()->first();
+        return response()->json([
+            'all' => (($max_space)?$max_space->diskspace:0) * 1000 * 1000,
+            'used_all' => ($diskUsage_all)?$diskUsage_all->diskspace:0,
+            'category' => $diskUsage_category,
+            'deleted' => ($diskUsage_deleted)?$diskUsage_deleted->diskspace:0
         ]);
     }
 }
