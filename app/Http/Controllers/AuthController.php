@@ -98,6 +98,7 @@ class AuthController extends Controller {
                         'password' => bcrypt($request->password),
                         'unique_id' => Str::uuid()->toString(),
                         'email_activation_code' => $verification_code,
+                        'stripe_plan' => $plan_selected, //Simba
                         'plan_id' => $plan_id   //Simba
                     ]
                 ));
