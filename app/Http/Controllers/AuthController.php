@@ -63,16 +63,42 @@ class AuthController extends Controller {
         ]);
 
         if($validator->fails()){
-             return response()->json($validator->errors(), 400);
+            return response()->json($validator->errors(), 400);
         }
 
+        //Simba: plan_id added.
+        $plan_selected = $request->input('planOption');
+        if(	$plan_selected != "silver_monthly" && 
+					$plan_selected != "gold_monthly" && 
+					$plan_selected != "platinum_monthly" && 
+					$plan_selected != "silver_yearly" &&
+					$plan_selected != "gold_yearly" &&
+					$plan_selected != "platinum_yearly")
+        {
+            return response()->json("no_plan_selected", 400);
+        }
+        // Determine the plan ID
+        $plan_id = 4;
+        if($plan_selected == "silver_monthly" || $plan_selected == "silver_yearly") {
+            $plan_id = 1;
+        } 
+        else if($plan_selected == "gold_monthly" || $plan_selected == "gold_yearly") 
+        {
+            $plan_id = 2;
+        } 
+        else if($plan_selected == "platinum_monthly" || $plan_selected == "platinum_yearly") 
+        {
+            $plan_id = 3;
+        }
+        ///
         $verification_code = Str::uuid()->toString();
         $user = User::create(array_merge(
                     $validator->validated(),
                     [
                         'password' => bcrypt($request->password),
                         'unique_id' => Str::uuid()->toString(),
-                        'email_activation_code' => $verification_code
+                        'email_activation_code' => $verification_code,
+                        'plan_id' => $plan_id   //Simba
                     ]
                 ));
 
@@ -85,6 +111,7 @@ class AuthController extends Controller {
         //         $mail->to($email, $name);
         //         $mail->subject($subject);
         //     });
+
 
         return response()->json([
             'message' => 'User successfully registered',
