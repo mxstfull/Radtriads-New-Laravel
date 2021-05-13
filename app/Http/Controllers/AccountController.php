@@ -89,6 +89,9 @@ class AccountController extends Controller {
         $result =  DB::update('update users set show_html_code = ? where unique_id = ?',[$data['check_html'] ,$unique_id['u_id']]);
         $result =  DB::update('update users set show_forum_code = ? where unique_id = ?',[$data['check_bulletin'] ,$unique_id['u_id']]);
         $result =  DB::update('update users set show_social_share = ? where unique_id = ?',[$data['check_button'] ,$unique_id['u_id']]);
+        $result = User::select('show_direct_link', 'show_html_code', 'show_forum_code', 'show_social_share')
+            ->where('unique_id', $unique_id)
+            ->get()->first();
         return response()->json([
             'success'=> true,
             'message'=> $result

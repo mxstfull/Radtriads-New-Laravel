@@ -66,7 +66,6 @@ class AuthController extends Controller {
             return response()->json($validator->errors(), 400);
         }
 
-        //Simba: plan_id added.
         $plan_selected = $request->input('planOption');
         if(	$plan_selected != "silver_monthly" && 
 					$plan_selected != "gold_monthly" && 
@@ -98,8 +97,8 @@ class AuthController extends Controller {
                         'password' => bcrypt($request->password),
                         'unique_id' => Str::uuid()->toString(),
                         'email_activation_code' => $verification_code,
-                        'stripe_plan' => $plan_selected, //Simba
-                        'plan_id' => $plan_id   //Simba
+                        'stripe_plan' => $plan_selected, 
+                        'plan_id' => $plan_id   
                     ]
                 ));
 
