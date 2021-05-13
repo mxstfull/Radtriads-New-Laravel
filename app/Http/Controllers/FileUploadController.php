@@ -184,7 +184,7 @@ class FileUploadController extends Controller {
             return "failed";
         }
         $file = Storage::get($filePath.$fileName);
-        //Simba: insert Database.
+        
         $short_id = gen_uid(8);
         $title = $fileName;
         $unique_id = Str::uuid()->toString();
@@ -316,13 +316,6 @@ class FileUploadController extends Controller {
         for ($x = 1; $x <= 4; $x++) {
             $result[$x] = $this->getAllSubFolders($this->initial_path, 'Home', $categoryArray[$x-1]);
         }
-        $result[5] = [
-            'displayName' => "Trash",
-            'iconName' => "person",
-            'path' => "",
-            'category' => "deleted",
-            'children' => []
-        ];
         return json_encode($result);
     }
     private function getAllSubFolders($currentPath, $folder_title, $category) {
