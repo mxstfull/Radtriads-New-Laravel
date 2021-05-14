@@ -24,9 +24,8 @@ use VideoThumbnail;
 use ffmpeg_movie;
 
 define("GOOGLE_API_KEY", "AIzaSyDkGP4XbpCDaAB-qFIqnJqNIqStWWA1IOU");
-use GoogleCloudVision\GoogleCloudVision;
-use GoogleCloudVision\Request\AnnotateImageRequest;
-use Google\Cloud\Core\ServiceBuilder;
+use Google\Cloud\Vision\V1\ImageAnnotatorClient;
+
 
 class FileUploadController extends Controller {
 
@@ -125,11 +124,32 @@ class FileUploadController extends Controller {
             $fileName = $title;
         }
         
+        //check if image is safe.
+        // $imageAnnotator = new ImageAnnotatorClient();
+
+        // $image = $file;
+        // $response = $imageAnnotator->safeSearchDetection($image);
+        // $safe = $response->getSafeSearchAnnotation();
+        // $adult = $safe->getAdult();
+        // return $adult;
+
+        // $image = base64_encode(file_get_contents($request->file('image')));
+
+        // //prepare request
+        // $request = new AnnotateImageRequest();
+        // $request->setImage($image);
+        // $request->setFeature("TEXT_DETECTION");
+        // $gcvRequest = new GoogleCloudVision([$request],  env('GOOGLE_CLOUD_KEY'));
+        // //send annotation request
+        // $response = $gcvRequest->annotate();
+        
+        // if($this->category == 0) {
+        //     $gcvRequest = new GoogleCloudVision([$request],  env('GOOGLE_CLOUD_KEY'));
+        //     return $vision;
+        // }
+
         //Create thumbnails for photos.
         //can't create thumnail for tiff images, and other files(music, video, code).
-
-        
-        
         if($this->category == 0 && $file->getClientOriginalExtension() != "tif" && $file->getClientOriginalExtension() != "tiff") 
         {
             $thumb = Image::make($file->getRealPath())->resize(600, 600, function ($constraint) {
@@ -181,6 +201,7 @@ class FileUploadController extends Controller {
             return "failed";
         }
         $file = Storage::get($filePath.$fileName);
+
         
         $short_id = gen_uid(8);
         $title = $fileName;
