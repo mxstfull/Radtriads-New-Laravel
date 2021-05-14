@@ -35,6 +35,7 @@ Route::group([
     Route::post('Privacy', 'AccountController@Privacy');
     Route::post('delete' , 'AccountController@delete');
     Route::post('getDiskUsage' , 'AccountController@getDiskUsage');
+    Route::post('uploadAvatar' , 'AccountController@uploadAvatar');
 });
 
 
