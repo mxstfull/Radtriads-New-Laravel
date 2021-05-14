@@ -14,6 +14,7 @@ use DB, Hash, Mail;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Mail\Message;
 use App\Models\FileModel;
+use Illuminate\Support\Facades\File;
 
 class AccountController extends Controller {
 
@@ -23,7 +24,7 @@ class AccountController extends Controller {
      * @return void
      */
     public function __construct() {
-        $this->middleware('auth:api', ['except' => ['MyInfo', 'GetUserData' , 'Settings' , 'Privacy' , 'delete', 'getDiskUsage']]);
+        $this->middleware('auth:api', ['except' => ['MyInfo', 'GetUserData' , 'Settings' , 'Privacy' , 'delete', 'getDiskUsage', 'uploadAvatar']]);
     }
 
         /**
@@ -133,11 +134,27 @@ class AccountController extends Controller {
             ->where('user_id', $user_id)
             ->where('is_deleted', 1)
             ->get()->first();
+        $file_count = FileModel::select(DB::raw('count(id) as count'))
+            ->where('user_id', $user_id)
+            ->get()->first()->count;
         return response()->json([
             'all' => (($max_space)?$max_space->diskspace:0) * 1000 * 1000,
             'used_all' => ($diskUsage_all)?$diskUsage_all->diskspace:0,
             'category' => $diskUsage_category,
-            'deleted' => ($diskUsage_deleted)?$diskUsage_deleted->diskspace:0
+            'deleted' => ($diskUsage_deleted)?$diskUsage_deleted->diskspace:0,
+            'file_count' => $file_count
         ]);
+    }
+    public function uploadAvatar(Request $request) {
+        $file = $request->file('image');
+        $unique_id = $request->unique_id;
+        $filename  = $file->getClientOriginalName();
+        $extension = $file->getClientOriginalExtension();
+        $avatarFileName = $unique_id.'.'.$extension;
+        if(!is_dir(storage_path('app/avatars')))
+            File::makeDirectory(storage_path('app/avatars'));
+        $file->move(storage_path('app/avatars'), $avatarFileName);
+        User::where('unique_id', $unique_id)
+            ->update(['profile_picture' => $avatarFileName]);
     }
 }

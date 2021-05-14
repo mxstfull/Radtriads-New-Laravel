@@ -129,10 +129,7 @@ class FileUploadController extends Controller {
         //can't create thumnail for tiff images, and other files(music, video, code).
 
         
-        if(extension_loaded('Imagick')) {
-            echo 'Imagick Loaded';
-        }
-        else echo "ERRORs";
+        
         if($this->category == 0 && $file->getClientOriginalExtension() != "tif" && $file->getClientOriginalExtension() != "tiff") 
         {
             $thumb = Image::make($file->getRealPath())->resize(600, 600, function ($constraint) {
