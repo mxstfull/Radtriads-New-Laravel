@@ -20,8 +20,28 @@ Route::get('/', function () {
 Route::get('files/{filename}', function ($filename){
 
     $filename = urldecode($filename);
+    
     $filename = my_laravelDecode($filename);
     $path = storage_path('app/' . $filename);
+
+    if (!File::exists($path)) {
+        abort(404);
+    }
+
+    $file = File::get($path);
+    $type = File::mimeType($path);
+
+    $response = Response::make($file, 200);
+    $response->header("Content-Type", $type);
+//    $response->header('Content-Disposition', 'attachment');
+    return $response;
+});
+Route::get('avatar/{filename}', function ($filename){
+
+    $filename = urldecode($filename);
+    
+    $filename = my_laravelDecode($filename);
+    $path = storage_path('app/avatars/' . $filename);
 
     if (!File::exists($path)) {
         abort(404);

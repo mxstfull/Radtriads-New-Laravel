@@ -68,13 +68,13 @@ class AuthController extends Controller {
             return response()->json($validator->errors(), 400);
         }
 
-        $result['plan_selected'] = $request->input('planOption');
-        if(	$result['plan_selected'] != "silver_monthly" && 
-					$result['plan_selected'] != "gold_monthly" && 
-					$result['plan_selected'] != "platinum_monthly" && 
-					$result['plan_selected'] != "silver_yearly" &&
-					$result['plan_selected'] != "gold_yearly" &&
-					$result['plan_selected'] != "platinum_yearly")
+        $plan_selected = $request->input('planOption');
+        if(	$plan_selected != "silver_monthly" && 
+					$plan_selected != "gold_monthly" && 
+					$plan_selected != "platinum_monthly" && 
+					$plan_selected != "silver_yearly" &&
+					$plan_selected != "gold_yearly" &&
+					$plan_selected != "platinum_yearly")
         {
             return response()->json("no_plan_selected", 400);
         }
@@ -99,8 +99,8 @@ class AuthController extends Controller {
                         'password' => bcrypt($request->password),
                         'unique_id' => Str::uuid()->toString(),
                         'email_activation_code' => $verification_code,
-                        'stripe_plan' => $result['plan_selected'],
-                        'plan_id' => $plan_id
+                        'stripe_plan' => $plan_selected, 
+                        'plan_id' => $plan_id   
                     ]
                 ));
 
