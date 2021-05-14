@@ -53,12 +53,13 @@ class FileViewController extends Controller
             ->get();
         }
         else if($category == -1) { //This is for all medias.
-            
+            $pageNumber = $request->input('pageNumber');
             $result = [
             'total' =>FileModel::select('unique_id', 'title', 'url', 'thumb_url', 'filename', 'diskspace', 'category', 'is_protected', 'is_picture', 'ext', 'created_at', 'updated_at')
                 ->where('user_id', $user_id)
                 ->where('is_deleted', 0)
                 ->orderby('created_at', 'desc')
+                ->skip($pageNumber * 200)->take(200)
                 ->get(),
 
             'recent'=> FileModel::select('unique_id', 'title', 'url', 'thumb_url', 'filename', 'diskspace', 'category', 'is_protected', 'is_picture', 'ext', 'created_at', 'updated_at')
