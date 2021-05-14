@@ -46,7 +46,9 @@ class AuthController extends Controller {
             return response()->json(['error' => 'Either email or password is wrong.'], 401);
         }
 
-        return $this->createNewToken($token);
+        $response = $this->createNewToken($token);
+        $response['userPlan'] = checkUserPlan(auth()->user()['id']);
+        return response()->json($response);
     }
 
     /**
@@ -78,14 +80,14 @@ class AuthController extends Controller {
         }
         // Determine the plan ID
         $plan_id = 4;
-        if($plan_selected == "silver_monthly" || $plan_selected == "silver_yearly") {
+        if($result['plan_selected'] == "silver_monthly" || $result['plan_selected'] == "silver_yearly") {
             $plan_id = 1;
         } 
-        else if($plan_selected == "gold_monthly" || $plan_selected == "gold_yearly") 
+        else if($result['plan_selected'] == "gold_monthly" || $result['plan_selected'] == "gold_yearly") 
         {
             $plan_id = 2;
         } 
-        else if($plan_selected == "platinum_monthly" || $plan_selected == "platinum_yearly") 
+        else if($result['plan_selected'] == "platinum_monthly" || $result['plan_selected'] == "platinum_yearly") 
         {
             $plan_id = 3;
         }
@@ -171,7 +173,7 @@ class AuthController extends Controller {
      * @return \Illuminate\Http\JsonResponse
      */
     public function refresh() {
-        return $this->createNewToken(auth()->refresh());
+        return response()->json($this->createNewToken(auth()->refresh()));
     }
 
     /**
@@ -191,12 +193,11 @@ class AuthController extends Controller {
      * @return \Illuminate\Http\JsonResponse
      */
     protected function createNewToken($token){
-        return response()->json([
+        return [
             'access_token' => $token,
             'token_type' => 'bearer',
             'expires_in' => auth()->factory()->getTTL() * 60,
             'user' => auth()->user()
-        ]);
+        ];
     }
-
 }

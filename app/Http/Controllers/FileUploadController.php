@@ -202,7 +202,6 @@ class FileUploadController extends Controller {
         }
         $file = Storage::get($filePath.$fileName);
 
-        
         $short_id = gen_uid(8);
         $title = $fileName;
         $unique_id = Str::uuid()->toString();
