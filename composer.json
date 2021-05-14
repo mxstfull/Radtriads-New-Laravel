@@ -21,6 +21,7 @@
         "pawlox/video-thumbnail": "^1.0",
         "php-ffmpeg/php-ffmpeg": "^0.18.0",
         "pion/laravel-chunk-upload": "^1.4",
+        "stripe/stripe-php": "^7.78",
         "tymon/jwt-auth": "^1.0"
     },
     "require-dev": {
@@ -49,7 +50,8 @@
             "database/factories"
         ],
         "files": [
-            "app/Helpers/Functions.php"
+            "app/Helpers/Functions.php",
+            "app/Helpers/StripeHelper.php"
         ]
     },
     "autoload-dev": {

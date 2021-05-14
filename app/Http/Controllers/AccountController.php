@@ -33,14 +33,15 @@ class AccountController extends Controller {
      */ 
     public function GetUserData(Request $request){
         $unique_id = $request['u_id'];
-        $check = DB::table('users')->where('unique_id',$request['u_id'])->first();
-        
-        // $sales = DB::table('order_lines')
-        // ->join('orders', 'orders.id', '=', 'order_lines.order_id')
-        // ->select(DB::raw('sum(order_lines.quantity*order_lines.per_qty) AS total_sales'))
-        // ->where('order_lines.product_id', $product->id)
-        // ->where('orders.order_status_id', 4)
-        // ->first();
+        $user = DB::table('users')->where('unique_id',$request['u_id'])->first();
+        $plan_detail = DB::table('plan')->where('id', $user->plan_id)->first();
+
+        $check = [
+            'user' => $user,
+            'plan' => checkUserPlan($user->id)
+        ];
+
+        $check['plan']['detail'] = $plan_detail;
 
         return response()->json([
             'success'=> true,

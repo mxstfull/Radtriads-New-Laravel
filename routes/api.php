@@ -37,6 +37,13 @@ Route::group([
     Route::post('getDiskUsage' , 'AccountController@getDiskUsage');
 });
 
+Route::group([
+    'middleware' => 'api',
+    'prefix' => 'stripe'
+], function ($router) {
+    Route::post('request_url', 'PlanController@request_url');
+    Route::post('payment_webhook', 'PlanController@webhook');
+});
 
 Route::group([
     'middleware' => 'api',
