@@ -80,14 +80,14 @@ class AuthController extends Controller {
         }
         // Determine the plan ID
         $plan_id = 4;
-        if($result['plan_selected'] == "silver_monthly" || $result['plan_selected'] == "silver_yearly") {
+        if($plan_selected == "silver_monthly" || $plan_selected == "silver_yearly") {
             $plan_id = 1;
         } 
-        else if($result['plan_selected'] == "gold_monthly" || $result['plan_selected'] == "gold_yearly") 
+        else if($plan_selected == "gold_monthly" || $plan_selected == "gold_yearly") 
         {
             $plan_id = 2;
         } 
-        else if($result['plan_selected'] == "platinum_monthly" || $result['plan_selected'] == "platinum_yearly") 
+        else if($plan_selected == "platinum_monthly" || $plan_selected == "platinum_yearly") 
         {
             $plan_id = 3;
         }
