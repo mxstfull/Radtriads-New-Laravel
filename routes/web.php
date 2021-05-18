@@ -55,8 +55,10 @@ Route::get('avatar/{filename}', function ($filename){
 //    $response->header('Content-Disposition', 'attachment');
     return $response;
 });
-function my_laravelDecode($param)
-{
-    $param = str_replace('>', '/', $param);
-    return $param;
+if (!function_exists('my_laravelDecode'))   {
+    function my_laravelDecode($param)
+    {
+        $param = str_replace('>', '/', $param);
+        return $param;
+    }
 }
