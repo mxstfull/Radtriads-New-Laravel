@@ -34,7 +34,7 @@ class AccountController extends Controller {
      */ 
     public function GetUserData(Request $request){
         $unique_id = $request['u_id'];
-        $user = DB::table('users')->where('unique_id',$request['u_id'])->first();
+        $user = DB::table('user')->where('unique_id',$request['u_id'])->first();
         $plan_detail = DB::table('plan')->where('id', $user->plan_id)->first();
 
         $check = [
@@ -70,10 +70,10 @@ class AccountController extends Controller {
             return response()->json($validator->errors(), 422);
         }
 
-//        $check = DB::table('users')->where('unique_id',$unique_id['u_id'])->first();
+//        $check = DB::table('user')->where('unique_id',$unique_id['u_id'])->first();
 
         $data_q=array('password' => $data['new_password'] , 'unique_id'=>$unique_id['u_id']);
-        $result =  DB::update('update users set password = ? where unique_id = ?',[bcrypt($data['new_password']),$unique_id['u_id']]);
+        $result =  DB::update('update user set password = ? where unique_id = ?',[bcrypt($data['new_password']),$unique_id['u_id']]);
         return response()->json([
             'success'=> true,
             'message'=> $result
@@ -87,10 +87,10 @@ class AccountController extends Controller {
     public function Settings(Request $request){
         $data = $request['value'];
         $unique_id = $request['val'];
-        $result =  DB::update('update users set show_direct_link = ? where unique_id = ?',[$data['check_direct'] ,$unique_id['u_id']]);
-        $result =  DB::update('update users set show_html_code = ? where unique_id = ?',[$data['check_html'] ,$unique_id['u_id']]);
-        $result =  DB::update('update users set show_forum_code = ? where unique_id = ?',[$data['check_bulletin'] ,$unique_id['u_id']]);
-        $result =  DB::update('update users set show_social_share = ? where unique_id = ?',[$data['check_button'] ,$unique_id['u_id']]);
+        $result =  DB::update('update user set show_direct_link = ? where unique_id = ?',[$data['check_direct'] ,$unique_id['u_id']]);
+        $result =  DB::update('update user set show_html_code = ? where unique_id = ?',[$data['check_html'] ,$unique_id['u_id']]);
+        $result =  DB::update('update user set show_forum_code = ? where unique_id = ?',[$data['check_bulletin'] ,$unique_id['u_id']]);
+        $result =  DB::update('update user set show_social_share = ? where unique_id = ?',[$data['check_button'] ,$unique_id['u_id']]);
         $result = User::select('show_direct_link', 'show_html_code', 'show_forum_code', 'show_social_share')
             ->where('unique_id', $unique_id)
             ->get()->first();
@@ -102,14 +102,14 @@ class AccountController extends Controller {
     public function Privacy(Request $request){
         $data = $request['value'];
         $unique_id = $request['val'];
-        $result =  DB::update('update users set is_account_public = ? where unique_id = ?',[$data['seleted'] ,$unique_id['u_id']]);
+        $result =  DB::update('update user set is_account_public = ? where unique_id = ?',[$data['seleted'] ,$unique_id['u_id']]);
         return response()->json([
             'success'=> true,
             'message'=> $result
         ]);
     }
     public function delete(Request $request){
-        $result = DB::delete('delete from users where unique_id = ?',[$request['u_id']]);
+        $result = DB::delete('delete from user where unique_id = ?',[$request['u_id']]);
         return response()->json([
             'success'=> true,
             'message'=> $result
@@ -117,9 +117,9 @@ class AccountController extends Controller {
     }
     public function getDiskUsage(Request $request) {
         $user_id = $request->input("user_id");
-        $max_space =DB::table('users')
-            ->where('users.id', $user_id)
-            ->join('plan', 'plan.id', '=', 'users.plan_id')
+        $max_space =DB::table('user')
+            ->where('user.id', $user_id)
+            ->join('plan', 'plan.id', '=', 'user.plan_id')
             ->select('plan.diskspace')
             ->get()->first();
         $diskUsage_all = FileModel::select(DB::raw("sum(diskspace) as diskspace"))
