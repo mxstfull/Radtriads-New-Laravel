@@ -33,7 +33,7 @@ class PlanController extends Controller
         $cancel_url = $request['cancel_url'];
         $payment_id = getStripeId($plan_id, $plan_method);
 
-        $user = DB::table('users')->where('unique_id', $unique_id)->first();
+        $user = DB::table('user')->where('unique_id', $unique_id)->first();
         
         \Stripe\Stripe::setApiKey(config('constants.STRIPE_SECRET_KEY'));
 
@@ -93,7 +93,7 @@ class PlanController extends Controller
                 $unique_id = $session->client_reference_id;
                 
                 // Check if the user already has a subscription active
-                $user_subscription_i =  DB::table('users')->where('unique_id', $unique_id)->first();
+                $user_subscription_i =  DB::table('user')->where('unique_id', $unique_id)->first();
                 
                 // Cancel the old subscription if we have one
                 if($user_subscription_i["stripe_subscription_id"] != "") {
@@ -139,7 +139,7 @@ class PlanController extends Controller
                     );
                     
                 } else {
-                    DB::table('users')
+                    DB::table('user')
                         ->where('unique_id', $unique_id)
                         ->update([
                             'first_pay'=> 1,

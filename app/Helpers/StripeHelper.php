@@ -9,7 +9,7 @@ function checkUserPlan($userId) {
     $result = [];
     $result['is_free_trial'] = false;
 
-    $user_subscription = DB::table('users')->where('id', $userId)->first();
+    $user_subscription = DB::table('user')->where('id', $userId)->first();
     
     $result['user_should_renew'] = NULL;
     $user_created_at = $user_subscription->created_at;

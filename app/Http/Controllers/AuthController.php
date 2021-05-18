@@ -58,8 +58,8 @@ class AuthController extends Controller {
      */
     public function register(Request $request) {
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string|between:2,100',
-            'email' => 'required|string|email|max:100|unique:users',
+            'username' => 'required|string|between:2,100',
+            'email' => 'required|string|email|max:100|unique:user',
             'password' => 'required|string|confirmed|min:6',
             'acceptTerms' => 'accepted',
         ]);
@@ -93,6 +93,11 @@ class AuthController extends Controller {
         }
         ///
         $verification_code = Str::uuid()->toString();
+        $rank;
+        $row_count = User::select('id')->get()
+            ->count();
+        if($row_count > 0) $rank = 0;
+        else $rank = 1;
         $user = User::create(array_merge(
                     $validator->validated(),
                     [
@@ -100,7 +105,10 @@ class AuthController extends Controller {
                         'unique_id' => Str::uuid()->toString(),
                         'email_activation_code' => $verification_code,
                         'stripe_plan' => $plan_selected, 
-                        'plan_id' => $plan_id   
+                        'plan_id' => $plan_id,
+                        'profile_picture' => '',
+                        'rank' => $rank,
+                        'status' => 1
                     ]
                 ));
 
@@ -130,7 +138,7 @@ class AuthController extends Controller {
     public function verifyUser(Request $request)
     {
 
-        $check = DB::table('users')->where('email_activation_code',$request['vcode'])->first();
+        $check = DB::table('user')->where('email_activation_code',$request['vcode'])->first();
 
         if(!is_null($check)){
             $user = User::find($check->id);
@@ -144,7 +152,7 @@ class AuthController extends Controller {
  
             $user->update(['email_verified' => 1]);
 
-//            DB::table('users')->where('email_activation_code',$verification_code)->delete();
+//            DB::table('user')->where('email_activation_code',$verification_code)->delete();
 
             return response()->json([
                 'success'=> true,
