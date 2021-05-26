@@ -53,13 +53,6 @@ Route::get('avatar/{filename}', function ($filename){
     return $response;
 });
 
-
-function my_laravelDecode($param)
-{
-    $param = str_replace('>', '/', $param);
-    return $param;
-}
-
 Route::group([
     'middleware' => 'web',
 ], function ($router) {
@@ -122,3 +115,10 @@ Route::group([
         return view('ajax.load_more_admin_photos');
     });
 });
+if (!function_exists('my_laravelDecode'))   {
+    function my_laravelDecode($param)
+    {
+        $param = str_replace('>', '/', $param);
+        return $param;
+    }
+}
