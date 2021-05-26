@@ -61,4 +61,16 @@ Route::group([
     Route::post('permanentlyDeleteFiles', 'FileViewController@permanentlyDeleteFiles');
     Route::post('getItemByUniqueId', 'FileViewController@getItemByUniqueId');
 });
+Route::group([
+    'middleware' => 'api',
+    'prefix' => 'config'
+], function ($router) {
+    Route::post('getLogoUrl', 'ConfigController@getLogoUrl');
+});
 
+Route::group([
+    'middleware' => 'api',
+    'prefix' => 'customPage'
+], function ($router) {
+    Route::post('getPageById', 'CustomPageController@getPageById');
+});

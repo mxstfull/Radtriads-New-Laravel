@@ -13,7 +13,7 @@ use Tymon\JWTAuth\Exceptions\JWTException;
 use DB, Hash, Mail;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Mail\Message;
-
+use App\Models\SessionModel;
 
 class AuthController extends Controller {
 
@@ -23,7 +23,7 @@ class AuthController extends Controller {
      * @return void
      */
     public function __construct() {
-        $this->middleware('auth:api', ['except' => ['login', 'register', 'verifyUser']]);
+        $this->middleware('auth:api', ['except' => ['login', 'register', 'verifyUser', 'logout']]);
     }
 
     /**
@@ -45,9 +45,11 @@ class AuthController extends Controller {
         if (! $token = auth()->attempt($validator->validated())) {
             return response()->json(['error' => 'Either email or password is wrong.'], 401);
         }
-
         $response = $this->createNewToken($token);
         $response['userPlan'] = checkUserPlan(auth()->user()['id']);
+        SessionModel::where('id', '>',  0)
+            ->delete();
+        SessionModel::create( array ('user_id' => auth()->user()['id']) );
         return response()->json($response);
     }
 
@@ -170,9 +172,9 @@ class AuthController extends Controller {
      * @return \Illuminate\Http\JsonResponse
      */
     public function logout() {
-        auth()->logout();
-
-        return response()->json(['message' => 'User successfully signed out']);
+        if(auth()->user())
+            auth()->logout();
+        return true;
     }
 
     /**
