@@ -15,6 +15,9 @@ use Illuminate\Support\Facades\DB;
 class FileViewController extends Controller
 {
     //
+    public function __construct() {
+        
+    }
     public $filterArray = array (
         'photo' => array('jpg', 'jpeg', 'png', 'git', 'tif'),
         'music' => array('mp3', 'wav'),
@@ -257,10 +260,9 @@ class FileViewController extends Controller
         $unique_id = $request->input('unique_id');
         if($unique_id == null) return false;
         else {
-            $result = FileModel::select('unique_id', 'title', 'url', 'thumb_url', 'filename', 'diskspace', 'category', 'is_protected', 'is_picture', 'ext', 'created_at', 'updated_at')
+            $result = FileModel::select('unique_id', 'title', 'url', 'thumb_url', 'filename', 'diskspace', 'category', 'is_protected', 'is_picture', 'ext', 'created_at', 'updated_at', 'user_id', 'password')
                     ->where('unique_id', $unique_id)
                     ->where('category', 0)
-                    ->where('is_deleted', 0)
                     ->first();
             return response()->json($result);
         }
