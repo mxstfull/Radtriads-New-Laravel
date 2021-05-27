@@ -8,7 +8,7 @@ use Validator;
 use App\User;
 use Illuminate\Support\Str;
 
-use JWTAuth;
+// use JWTAuth;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use DB, Hash, Mail;
 use Illuminate\Support\Facades\Password;
@@ -94,7 +94,7 @@ class AuthController extends Controller {
             $plan_id = 3;
         }
         ///
-        $verification_code = Str::uuid()->toString();
+        $verification_code = sha1(time().mt_rand(0,9999));
         $rank;
         $row_count = User::select('id')->get()
             ->count();
@@ -103,8 +103,9 @@ class AuthController extends Controller {
         $user = User::create(array_merge(
                     $validator->validated(),
                     [
-                        'password' => bcrypt($request->password),
-                        'unique_id' => Str::uuid()->toString(),
+                        // 'password' => bcrypt($request->password),
+                        'password' => sha1($request->password),
+                        'unique_id' => sha1(time().mt_rand(0,9999)),
                         'email_activation_code' => $verification_code,
                         'stripe_plan' => $plan_selected, 
                         'plan_id' => $plan_id,

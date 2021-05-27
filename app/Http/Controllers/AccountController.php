@@ -73,7 +73,7 @@ class AccountController extends Controller {
 //        $check = DB::table('user')->where('unique_id',$unique_id['u_id'])->first();
 
         $data_q=array('password' => $data['new_password'] , 'unique_id'=>$unique_id['u_id']);
-        $result =  DB::update('update user set password = ? where unique_id = ?',[bcrypt($data['new_password']),$unique_id['u_id']]);
+        $result =  DB::update('update user set password = ? where unique_id = ?',[sha1($data['new_password']),$unique_id['u_id']]);
         return response()->json([
             'success'=> true,
             'message'=> $result
