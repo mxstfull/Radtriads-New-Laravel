@@ -161,7 +161,7 @@ class FileViewController extends Controller
                     
                     $newFile = $file->replicate();
                     $short_id = gen_uid(8);
-                    $unique_id = Str::uuid()->toString();
+                    $unique_id = sha1(time().mt_rand(0,9999));
                     $newFile->short_id = $short_id;
                     $newFile->unique_id = $unique_id;
                     $newFile->save();

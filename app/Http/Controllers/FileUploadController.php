@@ -204,7 +204,7 @@ class FileUploadController extends Controller {
 
         $short_id = gen_uid(8);
         $title = $fileName;
-        $unique_id = Str::uuid()->toString();
+        $unique_id = sha1(time().mt_rand(0,9999));
         $url = $filePath.$fileName;
         $thumb_url = $filePath.'thumb_'.$fileName;
         if($this->is_picture == 0) $thumb_url = null;
