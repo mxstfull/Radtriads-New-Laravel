@@ -57,7 +57,7 @@ Route::group([
     'middleware' => 'web',
 ], function ($router) {
     Route::get('/', function () {
-        return view('admin');
+        return view('welcome');
     });
     Route::get('/admin', function () {
         return view('admin');
