@@ -26,6 +26,7 @@ class FileViewController extends Controller
     );
     public function getFileByCategory(Request $request)
     {
+        $searchText = $request->input('searchText');
         $unique_id = $request->input('unique_id');
         $user_id = $request->input('user_id');
         $currentPath = $request->input('currentPath');
@@ -52,7 +53,9 @@ class FileViewController extends Controller
             $result = FileModel::select('unique_id', 'title', 'url', 'thumb_url', 'filename', 'diskspace', 'category', 'is_protected', 'is_picture', 'ext', 'created_at', 'updated_at')
             ->where('user_id', $user_id)
             ->where('is_deleted', 1)
+            ->where('title', 'LIKE', "%$searchText%")
             ->orderby('created_at', 'desc')
+            
             ->get();
         }
         else if($category == -1) { //This is for all medias.
@@ -61,6 +64,7 @@ class FileViewController extends Controller
             'total' =>FileModel::select('unique_id', 'title', 'url', 'thumb_url', 'filename', 'diskspace', 'category', 'is_protected', 'is_picture', 'ext', 'created_at', 'updated_at')
                 ->where('user_id', $user_id)
                 ->where('is_deleted', 0)
+                ->where('title', 'LIKE', "%$searchText%")
                 ->orderby('created_at', 'desc')
                 ->skip($pageNumber * 200)->take(200)
                 ->get(),
@@ -68,17 +72,19 @@ class FileViewController extends Controller
             'recent'=> FileModel::select('unique_id', 'title', 'url', 'thumb_url', 'filename', 'diskspace', 'category', 'is_protected', 'is_picture', 'ext', 'created_at', 'updated_at')
                 ->where('user_id', $user_id)
                 ->where('is_deleted', 0)
+                ->where('title', 'LIKE', "%$searchText%")
                 ->orderby('created_at', 'desc')
                 ->take(200)
                 ->get()
             ];
         }
-        else { //This is for special category.
+        else { //This is for specific category.
             $result = FileModel::select('unique_id', 'title', 'url', 'thumb_url', 'filename', 'diskspace', 'category', 'is_protected', 'is_picture', 'ext', 'created_at', 'updated_at')
             ->where('folder_path', 'like', $folderPath)
             ->where('user_id', $user_id)
             ->where('is_deleted', 0)
             ->where('category', $category)
+            ->where('title', 'LIKE', "%$searchText%")
             ->orderby('created_at', 'desc')
             ->get();
         }
