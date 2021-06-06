@@ -10,17 +10,17 @@ define("TEST_MODE", false);
 // MAIN URL
 //define("URL", "https://www.radtriads.com"); /* replace with current temp url */
 // define("URL", "127.0.0.1/RadTriads_4.13");
-define("URL", "http://127.0.0.1:8000");
+define("URL", "http://15.222.57.63:8000");
 
 // DB Host
 define("DB_HOST", "localhost");
 
 // DB Username
-define("DB_USERNAME", "root");
+define("DB_USERNAME", "user");
 
 // DB Password
 //define("DB_PASSWORD", "%NF6q6l)m2)a]BfyK.");
-define("DB_PASSWORD", "");
+define("DB_PASSWORD", "Password123!");
 // DB Name
 //define("DB_NAME", "radtriads_main");
 define("DB_NAME", "radtriads_main");
