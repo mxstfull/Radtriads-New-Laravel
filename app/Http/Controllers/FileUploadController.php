@@ -62,16 +62,16 @@ class FileUploadController extends Controller {
         $this->unique_id = $request->input('unique_id');
         $this->currentPathForUpload = $request->input('currentPath');
         $this->ip_address = $request->ip();
-        if($request->input('currentCategory') == 'photo') {
+        if($request->input('currentCategory') == 'Photo') {
             $this->category = 0;
         }
-        else if($request->input('currentCategory') == 'music') {
+        else if($request->input('currentCategory') == 'Music') {
             $this->category = 1;
         }
-        else if($request->input('currentCategory') == 'video') {
+        else if($request->input('currentCategory') == 'Video') {
             $this->category = 2;
         }
-        else if($request->input('currentCategory') == 'code') {
+        else if($request->input('currentCategory') == 'Code') {
             $this->category = 3;
         }
         //create the file receiver
@@ -103,10 +103,11 @@ class FileUploadController extends Controller {
 
     protected function saveFile(UploadedFile $file)
     {
+        $categoryArray = ['Photo', 'Music', 'Video', 'Code'];
         $fileName = $this->createFilename($file);
-        $currentPath = $this->unique_id;
-        if(!empty($this->currentPathForUpload) && $this->currentPathForUpload != 'home')
-            $currentPath = $currentPath.'/'.$this->currentPathForUpload;
+        $currentPath = $this->unique_id.'/'.$categoryArray[$this->category];
+        if(!empty($this->currentPathForUpload) && $this->currentPathForUpload != 'home' )
+            $currentPath = $this->unique_id.'/'.$this->currentPathForUpload;
 
         // Build the file path
         $filePath = "uploads/{$currentPath}/";
@@ -322,7 +323,12 @@ class FileUploadController extends Controller {
         if(!is_dir($this->initial_path))
             File::makeDirectory($this->initial_path);
         $result = array(5);
-        $categoryArray = ['photos', 'music', 'video', 'code'];
+        $categoryArray = ['Photo', 'Music', 'Video', 'Code'];
+        for($i = 0; $i < 4; $i ++) {
+            if(!is_dir($this->initial_path."/".$categoryArray[$i]))
+            File::makeDirectory($this->initial_path."/".$categoryArray[$i]);
+        }
+
         $result[0] = [
             'displayName' => "All Files",
             'iconName' => "person",
@@ -331,7 +337,7 @@ class FileUploadController extends Controller {
             'children' => []
         ];
         for ($x = 1; $x <= 4; $x++) {
-            $result[$x] = $this->getAllSubFolders($this->initial_path, 'Home', $categoryArray[$x-1]);
+            $result[$x] = $this->getAllSubFolders($this->initial_path."/".$categoryArray[$x-1], 'Home', $categoryArray[$x-1]);
         }
         return json_encode($result);
     }
