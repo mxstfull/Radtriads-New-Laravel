@@ -60,7 +60,9 @@ Route::group([
     Route::post('recoverFiles', 'FileViewController@recoverFiles');
     Route::post('permanentlyDeleteFiles', 'FileViewController@permanentlyDeleteFiles');
     Route::post('getItemByUniqueId', 'FileViewController@getItemByUniqueId');
+    Route::post('deleteAlbum', 'FileViewController@deleteAlbum');
 });
+
 Route::group([
     'middleware' => 'api',
     'prefix' => 'config'

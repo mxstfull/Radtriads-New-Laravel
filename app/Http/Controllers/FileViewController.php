@@ -11,6 +11,7 @@ use App\Models\FileModel;
 use ZipArchive;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Filesystem\Filesystem;
 
 class FileViewController extends Controller
 {
@@ -19,10 +20,10 @@ class FileViewController extends Controller
         
     }
     public $filterArray = array (
-        'photo' => array('jpg', 'jpeg', 'png', 'git', 'tif'),
-        'music' => array('mp3', 'wav'),
-        'video' => array('mp4', 'mov', 'swf', 'flv'),
-        'code' => array('txt', 'rtf', 'html', 'html5', 'webm', 'php', 'css', 'xml', 'json', 'pdf', 'docx', 'xlsx', 'pptx', 'java')
+        'Photo' => array('jpg', 'jpeg', 'png', 'git', 'tif'),
+        'Music' => array('mp3', 'wav'),
+        'Video' => array('mp4', 'mov', 'swf', 'flv'),
+        'Code' => array('txt', 'rtf', 'html', 'html5', 'webm', 'php', 'css', 'xml', 'json', 'pdf', 'docx', 'xlsx', 'pptx', 'java')
     );
     public function getFileByCategory(Request $request)
     {
@@ -30,13 +31,14 @@ class FileViewController extends Controller
         $unique_id = $request->input('unique_id');
         $user_id = $request->input('user_id');
         $currentPath = $request->input('currentPath');
-        if($currentPath == "home") $currentPath = "";
-        if(!empty($currentPath)) $currentPath = $currentPath.'/';
         $category = $request->input('category');
-        // $this->filterArray[$category]
-        $realPath = storage_path('app/uploads/').$unique_id.$currentPath; 
+        $categoryArray = ['Photo', 'Music', 'Video', 'Code'];
+        if($currentPath == "home") $currentPath = $categoryArray[$category];
+        if(!empty($currentPath)) $currentPath = $currentPath.'/';
         
-        $folderPath = 'uploads/'.$unique_id.'/'.$currentPath; 
+        // $this->filterArray[$category]
+        
+        
         // $folderPath = str_replace(' ', '%20', $folderPath);
         if($category == -2) { //This is for deleted medias.
             //This is for erasing timeout medias.
@@ -79,6 +81,9 @@ class FileViewController extends Controller
             ];
         }
         else { //This is for specific category.
+            
+            $realPath = storage_path('app/uploads/').$unique_id."/".$currentPath; 
+            $folderPath = 'uploads/'.$unique_id.'/'.$currentPath; 
             $result = FileModel::select('unique_id', 'title', 'url', 'thumb_url', 'filename', 'diskspace', 'category', 'is_protected', 'is_picture', 'ext', 'created_at', 'updated_at')
             ->where('folder_path', 'like', $folderPath)
             ->where('user_id', $user_id)
@@ -272,5 +277,22 @@ class FileViewController extends Controller
                     ->first();
             return response()->json($result);
         }
+    }
+    public function deleteAlbum(Request $request) {
+        $unique_id = $request->input('unique_id');
+        $currentPath = $request->input('currentPath');
+        $user_id = $request->input('user_id');
+        // $category = $request->input('category');
+        //delete all files in current album
+        if(File::isDirectory(storage_path('app/uploads/'.$unique_id.'/'.$currentPath)))
+            File::deleteDirectory(storage_path('app/uploads/'.$unique_id.'/'.$currentPath));
+        FileModel::select('id')
+                ->where('folder_path', 'like', "%uploads/".$unique_id."/".$currentPath."%")
+                ->delete();
+        AlbumModel::select('id')
+                ->where('path', 'like', "%uploads/".$unique_id."/".$currentPath."%")
+                ->where('user_id', $user_id)
+                ->delete();
+        
     }
 }
