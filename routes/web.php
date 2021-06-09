@@ -38,6 +38,8 @@ Route::get('avatar/{filename}', function ($filename){
     $filename = urldecode($filename);
     
     $filename = my_laravelDecode($filename);
+    if(!is_dir(storage_path('app/avatars')))
+        File::makeDirectory(storage_path('app/avatars'));
     $path = storage_path('app/avatars/' . $filename);
 
     if (!File::exists($path)) {
