@@ -103,6 +103,7 @@ class FileUploadController extends Controller {
 
     protected function saveFile(UploadedFile $file)
     {
+        
         $categoryArray = ['Photo', 'Music', 'Video', 'Code'];
         $fileName = $this->createFilename($file);
         $currentPath = $this->unique_id.'/'.$categoryArray[$this->category];
@@ -196,13 +197,13 @@ class FileUploadController extends Controller {
         }
 
         $file->move($finalPath, $fileName);
-
+        
         if(!file_exists($finalPath.$fileName))
         {
             return "failed";
         }
-        $file = Storage::get($filePath.$fileName);
-
+        // $file = Storage::get($filePath.$fileName);
+        
         $short_id = gen_uid(8);
         $title = $fileName;
         $unique_id = sha1(time().mt_rand(0,9999));
