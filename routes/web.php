@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-
+use App\VideoStream;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -31,8 +31,14 @@ Route::get('files/{filename}', function ($filename){
     $response = Response::make($file, 200);
     $response->header("Content-Type", $type);
 //    $response->header('Content-Disposition', 'attachment');
-    return $response;
-});
+
+    if(strpos($type, 'video') !== false) {
+        $tmp = new VideoStream($path);        
+        $tmp->start();
+    }
+    else 
+        return $response;
+})->name('stream');
 Route::get('avatar/{filename}', function ($filename){
 
     $filename = urldecode($filename);
