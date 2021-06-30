@@ -21,7 +21,7 @@ class FileViewController extends Controller
     }
     public $filterArray = array (
         'Photo' => array('jpg', 'jpeg', 'png', 'git', 'tif'),
-        'Music' => array('mp3', 'wav'),
+        'Music' => array('mp3', 'wav', 'wma'),
         'Video' => array('mp4', 'mov', 'swf', 'flv'),
         'Code' => array('txt', 'rtf', 'html', 'html5', 'webm', 'php', 'css', 'xml', 'json', 'pdf', 'docx', 'xlsx', 'pptx', 'java', 'rar', 'zip')
     );
