@@ -151,7 +151,7 @@ $(document).ready(function() {
 	function jsEncode(param) {
 		if(param == null || param == "" ) return "";
 		let re = /\//gi;
-		param = param.replace(re, '>');
+		param = param.replace(re, '~');
 		return param;
 	}
 });

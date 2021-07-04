@@ -126,7 +126,7 @@ Route::group([
 if (!function_exists('my_laravelDecode'))   {
     function my_laravelDecode($param)
     {
-        $param = str_replace('>', '/', $param);
+        $param = str_replace('~', '/', $param);
         return $param;
     }
 }
